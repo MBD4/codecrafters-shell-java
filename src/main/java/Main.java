@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -10,6 +11,7 @@ public class Main {
             String[] input = scanner.nextLine().trim().split(" ");
             String command = input[0];
             String[] inputArgs = Arrays.copyOfRange(input, 1, input.length);
+            List<String> validCommands = List.of("exit", "echo", "type");
             if (command.equals("exit")) {
                 return;
             }
@@ -18,6 +20,14 @@ public class Main {
                     System.out.print(s + " ");
                 }
                 System.out.println();
+            }
+            else if (command.equals("type") && inputArgs.length != 0) {
+                if (validCommands.contains(inputArgs[0])) {
+                    System.out.println(inputArgs[0] + " is a shell builtin");
+                }
+                else {
+                    System.out.println(inputArgs[0] + ": not found");
+                }
             }
             else {
                 System.out.println(command + ": command not found");
