@@ -1,3 +1,5 @@
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -5,6 +7,10 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) throws Exception {
+
+        // gets the absolute PATH of the current directory the program runs in
+        Path currentDirectory = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+
         while (true) {
             System.out.print("$ ");
             Scanner scanner = new Scanner(System.in);
@@ -12,6 +18,7 @@ public class Main {
             String command = input[0];
             String[] inputArgs = Arrays.copyOfRange(input, 1, input.length);
             List<String> validCommands = List.of("exit", "echo", "type");
+
             if (command.equals("exit")) {
                 return;
             }
@@ -32,6 +39,9 @@ public class Main {
                 else {
                     System.out.println(inputArgs[0] + ": not found");
                 }
+            }
+            else if (Environment.locateExecutableFileInPATH(command) != null) {
+                Executer.runExecutableFile(Arrays.stream(input).toList(), currentDirectory);
             }
             else {
                 System.out.println(command + ": command not found");
