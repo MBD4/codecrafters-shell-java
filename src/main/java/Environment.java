@@ -20,4 +20,8 @@ public class Environment {
         }
         return null;
     }
+
+    public static String getHomeEnvironmentPath() {
+        return System.getenv("HOME");
+    }
 }

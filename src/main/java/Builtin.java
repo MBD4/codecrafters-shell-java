@@ -80,13 +80,17 @@ public class Builtin {
         StringBuilder buffer = new StringBuilder();
         for (String s : inputSplit) {
             buffer.append(s);
-            if (!buffer.toString().equals(".") && !buffer.toString().equals("/") && !buffer.toString().equals("./") && !buffer.toString().equals("..") &&!buffer.toString().equals("../")) {
+            if (!buffer.toString().equals(".") && !buffer.toString().equals("/") && !buffer.toString().equals("./")
+                    && !buffer.toString().equals("..") && !buffer.toString().equals("../") && !buffer.toString().equals("~")) {
                 newDirectory = Path.of(newDirectory.toString() + "/" + String.join("", inputSplit));
                 break;
             }
             else if (buffer.toString().equals("/")) {
                 newDirectory = Path.of(input);
                 break;
+            }
+            else if (buffer.toString().equals("~")) {
+                newDirectory = Path.of(Environment.getHomeEnvironmentPath());
             }
             else if (buffer.toString().equals("./")) {
                 inputSplit = Arrays.stream(inputSplit).skip(2).toArray(String[]::new);
@@ -105,14 +109,6 @@ public class Builtin {
         }
         return newDirectory;
     }
-//    private static Path doesDirectoryExist(Path oldDirectory, Path newDirectory) {
-//        if (Files.isDirectory(newDirectory)) {
-//            return newDirectory;
-//        } else {
-//            System.out.println("cd: " + newDirectory + ": No such file or directory");
-//            return oldDirectory;
-//        }
-//    }
 
     private static void executeExecutableFile(List<String> input, Path dir) {
         Executer.runExecutableFile(input, dir);
