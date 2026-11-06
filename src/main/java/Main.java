@@ -22,8 +22,12 @@ public class Main {
                 System.out.println();
             }
             else if (command.equals("type") && inputArgs.length != 0) {
+                String executableFile = Environment.locateExecutableFileInPATH(inputArgs[0]);
                 if (validCommands.contains(inputArgs[0])) {
                     System.out.println(inputArgs[0] + " is a shell builtin");
+                }
+                else if (executableFile != null) {
+                    System.out.println(inputArgs[0] + " is " + executableFile);
                 }
                 else {
                     System.out.println(inputArgs[0] + ": not found");
