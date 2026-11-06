@@ -13,10 +13,14 @@ public class Main {
         while (true) {
             System.out.print("$ ");
             Scanner scanner = new Scanner(System.in);
-            String[] inputArr = scanner.nextLine().trim().split(" ");
+            String line = scanner.nextLine();
+            if (line.isBlank()) {
+                continue;
+            }
+            String[] inputArr = line.trim().split(" ");
             List<String> input = Arrays.stream(inputArr).toList();
 
-            Builtin.executeInput(input, currentDirectory);
+            currentDirectory = Builtin.executeInput(input, currentDirectory);
         }
 
     }

@@ -1,16 +1,20 @@
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
 public class Builtin {
-    private final static List<String> builtins = List.of("exit", "echo", "type", "pwd");
+    private final static List<String> builtins = List.of("exit", "echo", "type", "pwd", "cd");
 
-    public static void executeInput(List<String> input, Path currentDirectory) {
+    public static Path executeInput(List<String> input, Path currentDirectory) {
         String command = input.getFirst();
         switch (command) {
             case "exit" -> executeExit();
             case "echo" -> executeEcho(input);
             case "type" -> executeType(input);
             case "pwd" -> executePwd(currentDirectory);
+            case "cd" -> {
+                return executeCd(input, currentDirectory);
+            }
             default -> {
                 if (Environment.locateExecutableFileInPATH(input.getFirst()) != null) {
                     executeExecutableFile(input, currentDirectory);
@@ -20,6 +24,7 @@ public class Builtin {
                 }
             }
         }
+        return currentDirectory;
     }
 
     private static void executeExit() {
@@ -35,6 +40,9 @@ public class Builtin {
     }
 
     private static void executeType(List<String> input) {
+        if (input.size() == 1) {
+            return;
+        }
         String fileToCheck = input.get(1);
         String executableFile = Environment.locateExecutableFileInPATH(fileToCheck);
         if (builtins.contains(fileToCheck)) {
@@ -50,6 +58,20 @@ public class Builtin {
 
     private static void executePwd(Path currentDirectory) {
         System.out.println(currentDirectory);
+    }
+
+    private static Path executeCd(List<String> input, Path currentDirectory) {
+        if (input.size() == 1) {
+            return currentDirectory;
+        }
+        Path newDirectory = Path.of(input.get(1));
+        if (Files.isDirectory(newDirectory)) {
+            return newDirectory;
+        }
+        else{
+            System.out.println("cd: " + newDirectory + ": No such file or directory");
+            return currentDirectory;
+        }
     }
 
     private static void executeExecutableFile(List<String> input, Path dir) {
