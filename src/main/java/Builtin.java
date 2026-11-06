@@ -1,5 +1,6 @@
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
 public class Builtin {
@@ -64,15 +65,54 @@ public class Builtin {
         if (input.size() == 1) {
             return currentDirectory;
         }
-        Path newDirectory = Path.of(input.get(1));
+        Path newDirectory = parseNewDirectory(input.get(1), currentDirectory);
         if (Files.isDirectory(newDirectory)) {
             return newDirectory;
-        }
-        else{
+        } else {
             System.out.println("cd: " + newDirectory + ": No such file or directory");
             return currentDirectory;
         }
     }
+
+    private static Path parseNewDirectory(String input, Path currentDirectory) {
+        String[] inputSplit = input.split("");
+        Path newDirectory = currentDirectory;
+        StringBuilder buffer = new StringBuilder();
+        for (String s : inputSplit) {
+            buffer.append(s);
+            if (!buffer.toString().equals(".") && !buffer.toString().equals("/") && !buffer.toString().equals("./") && !buffer.toString().equals("..") &&!buffer.toString().equals("../")) {
+                newDirectory = Path.of(newDirectory.toString() + "/" + String.join("", inputSplit));
+                break;
+            }
+            else if (buffer.toString().equals("/")) {
+                newDirectory = Path.of(input);
+                break;
+            }
+            else if (buffer.toString().equals("./")) {
+                inputSplit = Arrays.stream(inputSplit).skip(2).toArray(String[]::new);
+                buffer = new StringBuilder();
+            }
+            else if (buffer.toString().equals("../")) {
+                Path parrentPath = newDirectory.getParent();
+                if (parrentPath == null) {
+                    System.out.println("cd: " + input + ": No such file or directory");
+                    return currentDirectory;
+                }
+                inputSplit = Arrays.stream(inputSplit).skip(3).toArray(String[]::new);
+                newDirectory = Path.of(parrentPath.toString());
+                buffer = new StringBuilder();
+            }
+        }
+        return newDirectory;
+    }
+//    private static Path doesDirectoryExist(Path oldDirectory, Path newDirectory) {
+//        if (Files.isDirectory(newDirectory)) {
+//            return newDirectory;
+//        } else {
+//            System.out.println("cd: " + newDirectory + ": No such file or directory");
+//            return oldDirectory;
+//        }
+//    }
 
     private static void executeExecutableFile(List<String> input, Path dir) {
         Executer.runExecutableFile(input, dir);
