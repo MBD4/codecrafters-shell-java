@@ -38,9 +38,13 @@ public class Parser {
         }
         lineParsed.add(argToAdd.toString());
 
-        lineParsed.removeIf(String::isBlank);
+        lineParsed.removeIf(String::isEmpty);
 
-        String command = lineParsed.removeFirst();;
+        if(lineParsed.isEmpty()) {
+            return null;
+        }
+
+        String command = lineParsed.removeFirst();
 
         return new Input(command, lineParsed);
     }
