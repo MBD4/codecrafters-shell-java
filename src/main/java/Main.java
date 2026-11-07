@@ -17,8 +17,10 @@ public class Main {
             if (line.isBlank()) {
                 continue;
             }
-            String[] inputArr = line.trim().split(" ");
-            List<String> input = Arrays.stream(inputArr).toList();
+            Input input = Parser.parseInitialInput(line);
+            if (input == null) {
+                continue;
+            }
 
             currentDirectory = Builtin.executeInput(input, currentDirectory);
         }

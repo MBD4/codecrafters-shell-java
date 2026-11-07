@@ -6,8 +6,8 @@ import java.util.List;
 public class Builtin {
     private final static List<String> builtins = List.of("exit", "echo", "type", "pwd", "cd");
 
-    public static Path executeInput(List<String> input, Path currentDirectory) {
-        String command = input.getFirst();
+    public static Path executeInput(Input input, Path currentDirectory) {
+        String command = input.getCommand();
         switch (command) {
             case "exit" -> executeExit();
             case "echo" -> executeEcho(input);
@@ -17,7 +17,7 @@ public class Builtin {
                 return executeCd(input, currentDirectory);
             }
             default -> {
-                if (Environment.locateExecutableFileInPATH(input.getFirst()) != null) {
+                if (Environment.locateExecutableFileInPATH(command) != null) {
                     executeExecutableFile(input, currentDirectory);
                 }
                 else {
@@ -32,19 +32,19 @@ public class Builtin {
         System.exit(0);
     }
 
-    private static void executeEcho(List<String> input) {
-        List<String> stringsToEcho = input.subList(1, input.size());
+    private static void executeEcho(Input input) {
+        List<String> stringsToEcho = input.getArgs();
         for (String s: stringsToEcho) {
             System.out.print(s + " ");
         }
         System.out.println();
     }
 
-    private static void executeType(List<String> input) {
-        if (input.size() == 1) {
+    private static void executeType(Input input) {
+        if (input.getArgs().isEmpty()) {
             return;
         }
-        String fileToCheck = input.get(1);
+        String fileToCheck = input.getArgs().getFirst();
         String executableFile = Environment.locateExecutableFileInPATH(fileToCheck);
         if (builtins.contains(fileToCheck)) {
             System.out.println(fileToCheck + " is a shell builtin");
@@ -61,11 +61,11 @@ public class Builtin {
         System.out.println(currentDirectory);
     }
 
-    private static Path executeCd(List<String> input, Path currentDirectory) {
-        if (input.size() == 1) {
+    private static Path executeCd(Input input, Path currentDirectory) {
+        if (input.getArgs().isEmpty()) {
             return currentDirectory;
         }
-        Path newDirectory = parseNewDirectory(input.get(1), currentDirectory);
+        Path newDirectory = Parser.parseNewDirectory(input.getArgs().getFirst(), currentDirectory);
         if (Files.isDirectory(newDirectory)) {
             return newDirectory;
         } else {
@@ -74,43 +74,7 @@ public class Builtin {
         }
     }
 
-    private static Path parseNewDirectory(String input, Path currentDirectory) {
-        String[] inputSplit = input.split("");
-        Path newDirectory = currentDirectory;
-        StringBuilder buffer = new StringBuilder();
-        for (String s : inputSplit) {
-            buffer.append(s);
-            if (!buffer.toString().equals(".") && !buffer.toString().equals("/") && !buffer.toString().equals("./")
-                    && !buffer.toString().equals("..") && !buffer.toString().equals("../") && !buffer.toString().equals("~")) {
-                newDirectory = Path.of(newDirectory.toString() + "/" + String.join("", inputSplit));
-                break;
-            }
-            else if (buffer.toString().equals("/")) {
-                newDirectory = Path.of(input);
-                break;
-            }
-            else if (buffer.toString().equals("~")) {
-                newDirectory = Path.of(Environment.getHomeEnvironmentPath());
-            }
-            else if (buffer.toString().equals("./")) {
-                inputSplit = Arrays.stream(inputSplit).skip(2).toArray(String[]::new);
-                buffer = new StringBuilder();
-            }
-            else if (buffer.toString().equals("../")) {
-                Path parrentPath = newDirectory.getParent();
-                if (parrentPath == null) {
-                    System.out.println("cd: " + input + ": No such file or directory");
-                    return currentDirectory;
-                }
-                inputSplit = Arrays.stream(inputSplit).skip(3).toArray(String[]::new);
-                newDirectory = Path.of(parrentPath.toString());
-                buffer = new StringBuilder();
-            }
-        }
-        return newDirectory;
-    }
-
-    private static void executeExecutableFile(List<String> input, Path dir) {
+    private static void executeExecutableFile(Input input, Path dir) {
         Executer.runExecutableFile(input, dir);
     }
 

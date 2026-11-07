@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Executer {
@@ -15,9 +16,11 @@ public class Executer {
      * @param input the command and its arguments, where the first element is the executable name or path
      * @param dir the working directory in which the executable process should run
      */
-    public static void runExecutableFile(List<String> input, Path dir) {
+    public static void runExecutableFile(Input input, Path dir) {
         try {
-            ProcessBuilder pb = new ProcessBuilder(input);
+            List<String> pbArgs = new ArrayList<>(input.getArgs());
+            pbArgs.addFirst(input.getCommand());
+            ProcessBuilder pb = new ProcessBuilder(pbArgs);
             pb.directory(dir.toFile());
             pb.redirectErrorStream(true);
             try (Process process = pb.start()) {
