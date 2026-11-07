@@ -6,24 +6,10 @@ import java.util.List;
 public class Parser {
 
     public static Input parseInitialInput(String line) {
-        String[] inputArr = line.trim().split(" ", 2);
-        String command = inputArr[0].trim();
+        List<String> lineParsed;
 
-        if (inputArr.length <= 1) {
-            return new Input(command, new ArrayList<>());
-        }
-
-        String argString = inputArr[1].trim();
-
-
-        return new Input(command, parseArguments(argString));
-    }
-
-    private static List<String> parseArguments(String argString) {
-        List<String> args;
-
-        char[] argCharArr = argString.toCharArray();
-        args = new ArrayList<>();
+        char[] argCharArr = line.toCharArray();
+        lineParsed = new ArrayList<>();
         StringBuilder argToAdd = new StringBuilder();
         boolean singleQuotesActivated = false;
         boolean doubleQuotesActivated = false;
@@ -43,18 +29,20 @@ public class Parser {
                 singleQuotesActivated = !singleQuotesActivated;
             }
             else if (!singleQuotesActivated && !doubleQuotesActivated && c == ' ') {
-                args.add(argToAdd.toString());
+                lineParsed.add(argToAdd.toString());
                 argToAdd = new StringBuilder();
             }
             else {
                 argToAdd.append(c);
             }
         }
-        args.add(argToAdd.toString());
+        lineParsed.add(argToAdd.toString());
 
-        args.removeIf(String::isBlank);
+        lineParsed.removeIf(String::isBlank);
 
-        return args;
+        String command = lineParsed.removeFirst();;
+
+        return new Input(command, lineParsed);
     }
 
     public static Path parseNewDirectory(String input, Path currentDirectory) {
