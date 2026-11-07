@@ -33,10 +33,10 @@ public class Parser {
                 argToAdd.append(c);
                 escapeActivated = false;
             }
-            else if (c == '\\') {
+            else if (c == '\\' && !singleQuotesActivated) {
                 escapeActivated = true;
             }
-            else if (c == '"') {
+            else if (c == '"' && !singleQuotesActivated) {
                 doubleQuotesActivated = !doubleQuotesActivated;
             }
             else if (c == '\'' && !doubleQuotesActivated) {
