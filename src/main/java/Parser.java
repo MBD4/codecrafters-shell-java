@@ -55,7 +55,6 @@ public class Parser {
         args.removeIf(String::isBlank);
 
         return args;
-        
     }
 
     public static Path parseNewDirectory(String input, Path currentDirectory) {
