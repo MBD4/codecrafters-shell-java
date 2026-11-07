@@ -16,10 +16,32 @@ public class Parser {
         String argString = inputArr[1].trim();
         List<String> args;
 
-        if (argString.contains("'")) {
+        if (argString.contains("\"")) {
+            long count = argString.chars().filter(ch -> ch == '"').count();
+            if (count % 2 != 0) {
+                System.out.println("Error: uneven number of double quotes not allowed");
+                return null;
+            }
+            char[] argCharArr = argString.toCharArray();
+            args = new ArrayList<>();
+            StringBuilder argToAdd = new StringBuilder();
+            boolean skipSpaces = false;
+            for (char c : argCharArr) {
+                if (c == '"') {
+                    skipSpaces = !skipSpaces;
+                } else if (!skipSpaces && c == ' ') {
+                    args.add(argToAdd.toString());
+                    argToAdd = new StringBuilder();
+                } else {
+                    argToAdd.append(c);
+                }
+            }
+            args.add(argToAdd.toString());
+        }
+        else if (argString.contains("'")) {
             long count = argString.chars().filter(ch -> ch == '\'').count();
             if (count % 2 != 0) {
-                System.out.println("Error: uneven number of quotes not allowed");
+                System.out.println("Error: uneven number of single quotes not allowed");
                 return null;
             }
             char[] argCharArr = argString.toCharArray();
