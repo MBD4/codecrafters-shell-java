@@ -23,6 +23,9 @@ public class Parser {
         else if (input.args().contains("2>")) {
             fileToRedirectTo = getFileToRedirectTo("2>", input);
         }
+        else if (input.args().contains("2>>")) {
+            fileToRedirectTo = getFileToRedirectTo("2>>", input);
+        }
         return fileToRedirectTo;
     }
 

@@ -43,6 +43,11 @@ public class Main {
                 fileToRedirectTo = Parser.parseRedirectInput(input);
                 redirect = Redirect.STDERR;
             }
+            else if (input.args().contains("2>>")) {
+                append = true;
+                fileToRedirectTo = Parser.parseRedirectInput(input);
+                redirect = Redirect.STDERR;
+            }
             Output output = Builtin.executeInput(input, currentDirectory, redirect);
             currentDirectory = output.directory();
             if (output.stdOut() == null && output.stdErr() == null) {
@@ -80,7 +85,12 @@ public class Main {
                     if (!text.isEmpty() && !text.endsWith(System.lineSeparator())) {
                         text += System.lineSeparator();
                     }
-                    Files.writeString(Path.of(fileToRedirectTo), text);
+                    if (append) {
+                        Files.writeString(Path.of(fileToRedirectTo), text, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                    }
+                    else {
+                        Files.writeString(Path.of(fileToRedirectTo), text);
+                    }
                     if (output.stdOut() != null) {
                         System.out.println((output.stdOut()));
                     }
