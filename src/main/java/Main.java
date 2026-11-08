@@ -51,7 +51,6 @@ public class Main {
                 }
                 redirect = true;
             }
-
             Output output = Builtin.executeInput(input, currentDirectory, redirect);
             currentDirectory = output.directory();
             if (output.outputString() == null) {
