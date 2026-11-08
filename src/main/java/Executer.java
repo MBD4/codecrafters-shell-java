@@ -16,28 +16,42 @@ public class Executer {
      * @param input the command and its arguments, where the first element is the executable name or path
      * @param dir the working directory in which the executable process should run
      */
-    public static void runExecutableFile(Input input, Path dir) {
+    public static String runExecutableFile(Input input, Path dir, boolean redirect) {
         try {
-            List<String> pbArgs = new ArrayList<>(input.getArgs());
-            pbArgs.addFirst(input.getCommand());
+            List<String> pbArgs = new ArrayList<>(input.args());
+            pbArgs.addFirst(input.command());
             ProcessBuilder pb = new ProcessBuilder(pbArgs);
             pb.directory(dir.toFile());
-            pb.redirectErrorStream(true);
             try (Process process = pb.start()) {
 
                 // Read the program's output
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                BufferedReader readerStd = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                BufferedReader readerErr = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                 String line;
-                while ((line = reader.readLine()) != null) {
+                String rString = null;
+                if (!redirect) {
+                    while ((line = readerStd.readLine()) != null) {
+                        System.out.println(line);
+                    }
+                }
+                else {
+                    StringBuilder sb = new StringBuilder();
+                    while ((line = readerStd.readLine()) != null) {
+                        sb.append(line).append(System.lineSeparator());
+                    }
+                    rString = sb.toString();
+                }
+                while ((line = readerErr.readLine()) != null) {
                     System.out.println(line);
                 }
-
                 // Wait for the program to finish and get the exit code
-                int exitCode = process.waitFor();
+
+
+                return rString;
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            return e.toString();
         }
     }
 }
