@@ -14,42 +14,62 @@ public class Executer {
      * starting, reading from, or waiting for the process is caught and printed.
      *
      * @param input the command and its arguments, where the first element is the executable name or path
-     * @param dir the working directory in which the executable process should run
+     * @param currentDirectory the working directory in which the executable process should run
      */
-    public static String runExecutableFile(Input input, Path dir, boolean redirect) {
+    public static Output runExecutableFile(Input input, Path currentDirectory, Redirect redirect) {
         try {
             List<String> pbArgs = new ArrayList<>(input.args());
             pbArgs.addFirst(input.command());
             ProcessBuilder pb = new ProcessBuilder(pbArgs);
-            pb.directory(dir.toFile());
-            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-            if (!redirect) {
+            pb.directory(currentDirectory.toFile());
+            if (redirect != Redirect.STDERR) {
+                pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+            }
+            if (redirect != Redirect.STDOUT) {
                 pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
             }
             try (Process process = pb.start()) {
 
-                // Read the program's output
-                BufferedReader readerStd = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String line;
+                String stdOut = null;
+                String stdErr = null;
                 String rString = null;
+                if (redirect == Redirect.STDOUT) {
+                    BufferedReader readerStd = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    String line;
 
-                StringBuilder sb = new StringBuilder();
-                while ((line = readerStd.readLine()) != null) {
-                    sb.append(line).append(System.lineSeparator());
+                    StringBuilder sb = new StringBuilder();
+                    while ((line = readerStd.readLine()) != null) {
+                        sb.append(line).append(System.lineSeparator());
+                    }
+                    stdOut = sb.toString();
+
+                    process.waitFor();
+
+                    return new Output(currentDirectory, stdOut, stdErr);
                 }
-                if (redirect) {
-                    rString = sb.toString();
+                else if (redirect == Redirect.STDERR) {
+                    BufferedReader readerStd = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                    String line;
+
+                    StringBuilder sb = new StringBuilder();
+                    while ((line = readerStd.readLine()) != null) {
+                        sb.append(line).append(System.lineSeparator());
+                    }
+                    stdErr = sb.toString();
+
+                    process.waitFor();
+
+                    return new Output(currentDirectory, stdOut, stdErr);
+                }
+                else {
+                    process.waitFor();
+                    return new Output(currentDirectory, stdOut, stdErr);
                 }
 
-
-                // Wait for the program to finish and get the exit code
-                process.waitFor();
-
-                return rString;
             }
 
         } catch (Exception e) {
-            return e.toString();
+            throw new RuntimeException("this line in Executer should never be reached");
         }
     }
 }

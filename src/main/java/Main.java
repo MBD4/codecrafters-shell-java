@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
@@ -25,51 +26,64 @@ public class Main {
                 continue;
             }
 
-            boolean redirect = false;
-            int redirectSymbolIndex = -1;
-            String fileToRedirectTo = "";
+            Redirect redirect = Redirect.NONE;
+            String fileToRedirectTo = null;
             if (input.args().contains(">") || input.args().contains("1>")) {
-                if (input.args().contains(">")) {
-                    redirectSymbolIndex = input.args().indexOf(">");
-                    if (redirectSymbolIndex == input.args().size() - 1) {
-                        System.out.println("Error: no file to redirect to specified");
-                        continue;
-                    }
-                    input.args().remove(">");
-                    fileToRedirectTo = input.args().get(redirectSymbolIndex);
-                    input.args().remove(redirectSymbolIndex);
-                }
-                else {
-                    redirectSymbolIndex = input.args().indexOf("1>");
-                    if (redirectSymbolIndex >= input.args().size() - 1) {
-                        System.out.println("Error: no file to redirect to specified");
-                        continue;
-                    }
-                    input.args().remove("1>");
-                    fileToRedirectTo = input.args().get(redirectSymbolIndex);
-                    input.args().remove(redirectSymbolIndex);
-                }
-                redirect = true;
+                fileToRedirectTo = Parser.parseRedirectInput(input);
+                redirect = Redirect.STDOUT;
+            }
+            else if (input.args().contains("2>")) {
+                fileToRedirectTo = Parser.parseRedirectInput(input);
+                redirect = Redirect.STDERR;
             }
             Output output = Builtin.executeInput(input, currentDirectory, redirect);
             currentDirectory = output.directory();
-            if (output.outputString() == null) {
+            if (output.stdOut() == null && output.stdErr() == null) {
                 continue;
             }
-            if (redirect) {
+            if (redirect == Redirect.STDOUT) {
                 try {
-                    String text = output.outputString();
+                    String text = output.stdOut();
+                    if (text == null) {
+                        text = "";
+                    }
                     if (!text.isEmpty() && !text.endsWith(System.lineSeparator())) {
                         text += System.lineSeparator();
                     }
                     Files.writeString(Path.of(fileToRedirectTo), text);
+                    if (output.stdErr() != null) {
+                        System.out.println(output.stdErr());
+                    }
+                }
+                catch (IOException e) {
+                    System.out.println("error:" + e.getMessage());
+                }
+            }
+            else if (redirect == Redirect.STDERR) {
+                try {
+                    String text = output.stdErr();
+                    if (text == null) {
+                        text = "";
+                    }
+                    if (!text.isEmpty() && !text.endsWith(System.lineSeparator())) {
+                        text += System.lineSeparator();
+                    }
+                    Files.writeString(Path.of(fileToRedirectTo), text);
+                    if (output.stdOut() != null) {
+                        System.out.println((output.stdOut()));
+                    }
                 }
                 catch (IOException e) {
                     System.out.println("error:" + e.getMessage());
                 }
             }
             else {
-                System.out.println(output.outputString());
+                if (output.stdErr() != null) {
+                    System.out.println(output.stdErr());
+                }
+                if (output.stdOut() != null) {
+                    System.out.println((output.stdOut()));
+                }
             }
         }
     }

@@ -6,88 +6,88 @@ import java.util.List;
 public class Builtin {
     private final static List<String> builtins = List.of("exit", "echo", "type", "pwd", "cd");
 
-    public static Output executeInput(Input input, Path currentDirectory, boolean redirect) {
+    public static Output executeInput(Input input, Path currentDirectory, Redirect redirect) {
         String command = input.command();
         String outputString = "";
+        new Output(currentDirectory, null, null);
         switch (command) {
             case "exit" -> executeExit();
             case "echo" -> {
-                outputString = executeEcho(input);
+                return executeEcho(input, currentDirectory);
             }
             case "type" -> {
-                outputString = executeType(input);
+                return executeType(input, currentDirectory);
             }
             case "pwd" -> {
-                outputString = executePwd(currentDirectory);
+                return executePwd(currentDirectory);
             }
             case "cd" -> {
                 return executeCd(input, currentDirectory);
             }
             default -> {
                 if (Environment.locateExecutableFileInPATH(command) != null) {
-                    outputString = executeExecutableFile(input, currentDirectory, redirect);
+                    return executeExecutableFile(input, currentDirectory, redirect);
                 }
                 else {
-                    outputString = null;
-                    System.out.println(command + ": command not found");
+                    return new Output(currentDirectory, null, command + ": command not found");
                 }
             }
         }
-        return new Output(currentDirectory, outputString);
+        throw new RuntimeException("this line in Builtin.executeInput should never be reached");
     }
 
     private static void executeExit() {
         System.exit(0);
     }
 
-    private static String executeEcho(Input input) {
+    private static Output executeEcho(Input input, Path currentDirectory) {
         List<String> stringsToEcho = input.args();
         StringBuilder sb = new StringBuilder();
         for (String s: stringsToEcho) {
             sb.append(s).append(" ");
         }
-        return sb.toString();
+        return new Output(currentDirectory, sb.toString(), null);
     }
 
-    private static String executeType(Input input) {
+    private static Output executeType(Input input, Path currentDirectory) {
         if (input.args().isEmpty()) {
             return null;
         }
         String fileToCheck = input.args().getFirst();
         String executableFile = Environment.locateExecutableFileInPATH(fileToCheck);
         StringBuilder sb = new StringBuilder();
+        String stdOut = null;
+        String stdErr = null;
         if (builtins.contains(fileToCheck)) {
-            sb.append(fileToCheck).append(" is a shell builtin");
+            stdOut = fileToCheck + " is a shell builtin";
         }
         else if (executableFile != null) {
-            sb.append(fileToCheck).append(" is ").append(executableFile);
+            stdOut = fileToCheck + " is " + executableFile;
         }
         else {
-            System.out.println(fileToCheck + ": not found");
-            return null;
+            stdErr = fileToCheck + ": not found";
         }
-        return sb.toString();
+        return new Output(currentDirectory, stdOut, stdErr);
     }
 
-    private static String executePwd(Path currentDirectory) {
-        return currentDirectory.toString();
+    private static Output executePwd(Path currentDirectory) {
+        return new Output(currentDirectory, currentDirectory.toString(), null);
     }
 
     private static Output executeCd(Input input, Path currentDirectory) {
         if (input.args().isEmpty()) {
-            return new Output(currentDirectory, null);
+            return new Output(currentDirectory, null, null);
         }
         Path newDirectory = Parser.parseNewDirectory(input.args().getFirst(), currentDirectory);
         if (Files.isDirectory(newDirectory)) {
-            return new Output(newDirectory, null);
+            return new Output(newDirectory, null, null);
         } else {
-            System.out.println("cd: " + newDirectory + ": No such file or directory");
-            return new Output(currentDirectory, null);
+            return new Output(currentDirectory, null, "cd: " + newDirectory + ": No such file or directory");
         }
     }
 
-    private static String executeExecutableFile(Input input, Path dir, boolean redirect) {
-        return Executer.runExecutableFile(input, dir, redirect);
+    private static Output executeExecutableFile(Input input, Path currentDirectory, Redirect redirect) {
+        return Executer.runExecutableFile(input, currentDirectory, redirect);
     }
 
     public static List<String> getBuiltins() {

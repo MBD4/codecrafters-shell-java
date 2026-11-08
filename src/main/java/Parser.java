@@ -2,8 +2,35 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class Parser {
+
+    public static String parseRedirectInput(Input input) {
+        String fileToRedirectTo = null;
+        if (input.args().contains(">")) {
+            fileToRedirectTo = getFileToRedirectTo(">", input);
+        }
+        else if (input.args().contains("1>")){
+            fileToRedirectTo = getFileToRedirectTo("1>", input);
+        }
+        else if (input.args().contains("2>")) {
+            fileToRedirectTo = getFileToRedirectTo("2>", input);
+        }
+        return fileToRedirectTo;
+    }
+
+    private static String getFileToRedirectTo(String operator, Input input) {
+        int redirectSymbolIndex = input.args().indexOf(operator);
+        if (redirectSymbolIndex == input.args().size() - 1) {
+            System.out.println("Error: no file to redirect to specified");
+            return null;
+        }
+        input.args().remove(operator);
+        String fileToRedirectTo = input.args().get(redirectSymbolIndex);
+        input.args().remove(redirectSymbolIndex);
+        return fileToRedirectTo;
+    }
 
     public static Input parseInitialInput(String line) {
         List<String> lineParsed;
@@ -46,7 +73,7 @@ public class Parser {
 
         String command = lineParsed.removeFirst();
 
-        return new Input(command, lineParsed);
+        return new Input(command, lineParsed, Redirect.NONE);
     }
 
     public static Path parseNewDirectory(String input, Path currentDirectory) {
