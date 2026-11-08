@@ -7,14 +7,15 @@ import java.util.List;
 public class Executer {
 
     /**
-     * Runs an executable command with its arguments in the specified working directory.
-     * The process standard error stream is merged with the standard output stream, and
-     * all output produced by the process is printed to the standard output. This method
-     * waits for the process to finish before returning. Any exception that occurs while
-     * starting, reading from, or waiting for the process is caught and printed.
+     * Runs the executable command described by the given input in the specified working directory,
+     * optionally capturing either standard output or standard error according to the redirect value.
+     * Streams that are not captured are inherited by the current process. The method waits for the
+     * launched process to complete before returning.
      *
-     * @param input the command and its arguments, where the first element is the executable name or path
-     * @param currentDirectory the working directory in which the executable process should run
+     * @param input the command and arguments used to start the executable
+     * @param currentDirectory the working directory in which the executable is run
+     * @param redirect determines whether standard output, standard error, or neither stream is captured
+     * @return an output record containing the working directory and any captured standard output or standard error
      */
     public static Output runExecutableFile(Input input, Path currentDirectory, Redirect redirect) {
         try {
