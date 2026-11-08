@@ -56,10 +56,13 @@ public class Main {
             if (output.outputString() == null) {
                 continue;
             }
-
             if (redirect) {
                 try {
-                    Files.writeString(Path.of(fileToRedirectTo), output.outputString());
+                    String text = output.outputString();
+                    if (!text.isEmpty() && !text.endsWith(System.lineSeparator())) {
+                        text += System.lineSeparator();
+                    }
+                    Files.writeString(Path.of(fileToRedirectTo), text);
                 }
                 catch (IOException e) {
                     System.out.println("error:" + e.getMessage());

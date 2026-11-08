@@ -22,30 +22,28 @@ public class Executer {
             pbArgs.addFirst(input.command());
             ProcessBuilder pb = new ProcessBuilder(pbArgs);
             pb.directory(dir.toFile());
+            pb.redirectError(ProcessBuilder.Redirect.INHERIT);
+            if (!redirect) {
+                pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            }
             try (Process process = pb.start()) {
 
                 // Read the program's output
                 BufferedReader readerStd = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                BufferedReader readerErr = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                 String line;
                 String rString = null;
-                if (!redirect) {
-                    while ((line = readerStd.readLine()) != null) {
-                        System.out.println(line);
-                    }
+
+                StringBuilder sb = new StringBuilder();
+                while ((line = readerStd.readLine()) != null) {
+                    sb.append(line).append(System.lineSeparator());
                 }
-                else {
-                    StringBuilder sb = new StringBuilder();
-                    while ((line = readerStd.readLine()) != null) {
-                        sb.append(line).append(System.lineSeparator());
-                    }
+                if (redirect) {
                     rString = sb.toString();
                 }
-                while ((line = readerErr.readLine()) != null) {
-                    System.out.println(line);
-                }
-                // Wait for the program to finish and get the exit code
 
+
+                // Wait for the program to finish and get the exit code
+                process.waitFor();
 
                 return rString;
             }
