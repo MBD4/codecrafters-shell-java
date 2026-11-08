@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +29,13 @@ public class Main {
 
             Redirect redirect = Redirect.NONE;
             String fileToRedirectTo = null;
+            boolean append = false;
             if (input.args().contains(">") || input.args().contains("1>")) {
+                fileToRedirectTo = Parser.parseRedirectInput(input);
+                redirect = Redirect.STDOUT;
+            }
+            else if (input.args().contains(">>") || input.args().contains("1>>")) {
+                append = true;
                 fileToRedirectTo = Parser.parseRedirectInput(input);
                 redirect = Redirect.STDOUT;
             }
@@ -50,7 +57,12 @@ public class Main {
                     if (!text.isEmpty() && !text.endsWith(System.lineSeparator())) {
                         text += System.lineSeparator();
                     }
-                    Files.writeString(Path.of(fileToRedirectTo), text);
+                    if (append) {
+                        Files.writeString(Path.of(fileToRedirectTo), text, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                    }
+                    else {
+                        Files.writeString(Path.of(fileToRedirectTo), text);
+                    }
                     if (output.stdErr() != null) {
                         System.out.println(output.stdErr());
                     }

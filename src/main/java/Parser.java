@@ -14,6 +14,12 @@ public class Parser {
         else if (input.args().contains("1>")){
             fileToRedirectTo = getFileToRedirectTo("1>", input);
         }
+        else if (input.args().contains(">>")){
+            fileToRedirectTo = getFileToRedirectTo(">>", input);
+        }
+        else if (input.args().contains("1>>")){
+            fileToRedirectTo = getFileToRedirectTo("1>>", input);
+        }
         else if (input.args().contains("2>")) {
             fileToRedirectTo = getFileToRedirectTo("2>", input);
         }
