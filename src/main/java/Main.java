@@ -27,77 +27,15 @@ public class Main {
                 continue;
             }
 
-            Redirect redirect = Redirect.NONE;
-            String fileToRedirectTo = null;
-            boolean append = false;
-            if (input.args().contains(">") || input.args().contains("1>")) {
-                fileToRedirectTo = Parser.parseRedirectInput(input);
-                redirect = Redirect.STDOUT;
-            }
-            else if (input.args().contains(">>") || input.args().contains("1>>")) {
-                append = true;
-                fileToRedirectTo = Parser.parseRedirectInput(input);
-                redirect = Redirect.STDOUT;
-            }
-            else if (input.args().contains("2>")) {
-                fileToRedirectTo = Parser.parseRedirectInput(input);
-                redirect = Redirect.STDERR;
-            }
-            else if (input.args().contains("2>>")) {
-                append = true;
-                fileToRedirectTo = Parser.parseRedirectInput(input);
-                redirect = Redirect.STDERR;
-            }
+            Redirect redirect = Parser.parseRedirectInput(input);
+
             Output output = Builtin.executeInput(input, currentDirectory, redirect);
             currentDirectory = output.directory();
             if (output.stdOut() == null && output.stdErr() == null) {
                 continue;
             }
-            if (redirect == Redirect.STDOUT) {
-                try {
-                    String text = output.stdOut();
-                    if (text == null) {
-                        text = "";
-                    }
-                    if (!text.isEmpty() && !text.endsWith(System.lineSeparator())) {
-                        text += System.lineSeparator();
-                    }
-                    if (append) {
-                        Files.writeString(Path.of(fileToRedirectTo), text, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-                    }
-                    else {
-                        Files.writeString(Path.of(fileToRedirectTo), text);
-                    }
-                    if (output.stdErr() != null) {
-                        System.out.println(output.stdErr());
-                    }
-                }
-                catch (IOException e) {
-                    System.out.println("error:" + e.getMessage());
-                }
-            }
-            else if (redirect == Redirect.STDERR) {
-                try {
-                    String text = output.stdErr();
-                    if (text == null) {
-                        text = "";
-                    }
-                    if (!text.isEmpty() && !text.endsWith(System.lineSeparator())) {
-                        text += System.lineSeparator();
-                    }
-                    if (append) {
-                        Files.writeString(Path.of(fileToRedirectTo), text, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-                    }
-                    else {
-                        Files.writeString(Path.of(fileToRedirectTo), text);
-                    }
-                    if (output.stdOut() != null) {
-                        System.out.println((output.stdOut()));
-                    }
-                }
-                catch (IOException e) {
-                    System.out.println("error:" + e.getMessage());
-                }
+            if (redirect != Redirect.NONE) {
+                writeFile(redirect, output);
             }
             else {
                 if (output.stdErr() != null) {
@@ -107,6 +45,43 @@ public class Main {
                     System.out.println((output.stdOut()));
                 }
             }
+        }
+    }
+
+    private static void writeFile(Redirect redirect, Output output) {
+        try {
+            String text;
+            if (redirect.target() == Redirect.Target.STDERR) {
+                text = output.stdErr();
+            }
+            else {
+                text = output.stdOut();
+            }
+            if (text == null) {
+                text = "";
+            }
+            if (!text.isEmpty() && !text.endsWith(System.lineSeparator())) {
+                text += System.lineSeparator();
+            }
+            if (redirect.append()) {
+                Files.writeString(Path.of(redirect.file()), text, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            }
+            else {
+                Files.writeString(Path.of(redirect.file()), text);
+            }
+            if (redirect.target() == Redirect.Target.STDERR) {
+                if (output.stdOut() != null) {
+                    System.out.println((output.stdOut()));
+                }
+            }
+            else {
+                if (output.stdErr() != null) {
+                    System.out.println((output.stdErr()));
+                }
+            }
+        }
+        catch (IOException e) {
+            System.out.println("error:" + e.getMessage());
         }
     }
 }

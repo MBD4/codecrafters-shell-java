@@ -23,18 +23,17 @@ public class Executer {
             pbArgs.addFirst(input.command());
             ProcessBuilder pb = new ProcessBuilder(pbArgs);
             pb.directory(currentDirectory.toFile());
-            if (redirect != Redirect.STDERR) {
+            if (redirect.target() != Redirect.Target.STDERR) {
                 pb.redirectError(ProcessBuilder.Redirect.INHERIT);
             }
-            if (redirect != Redirect.STDOUT) {
+            if (redirect.target() != Redirect.Target.STDOUT) {
                 pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
             }
             try (Process process = pb.start()) {
 
                 String stdOut = null;
                 String stdErr = null;
-                String rString = null;
-                if (redirect == Redirect.STDOUT) {
+                if (redirect.target() == Redirect.Target.STDOUT) {
                     BufferedReader readerStd = new BufferedReader(new InputStreamReader(process.getInputStream()));
                     String line;
 
@@ -48,7 +47,7 @@ public class Executer {
 
                     return new Output(currentDirectory, stdOut, stdErr);
                 }
-                else if (redirect == Redirect.STDERR) {
+                else if (redirect.target() == Redirect.Target.STDERR) {
                     BufferedReader readerStd = new BufferedReader(new InputStreamReader(process.getErrorStream()));
                     String line;
 

@@ -6,27 +6,35 @@ import java.util.Optional;
 
 public class Parser {
 
-    public static String parseRedirectInput(Input input) {
+    public static Redirect parseRedirectInput(Input input) {
         String fileToRedirectTo = null;
         if (input.args().contains(">")) {
             fileToRedirectTo = getFileToRedirectTo(">", input);
+            return new Redirect(Redirect.Target.STDOUT, fileToRedirectTo, false);
         }
         else if (input.args().contains("1>")){
             fileToRedirectTo = getFileToRedirectTo("1>", input);
+            return new Redirect(Redirect.Target.STDOUT, fileToRedirectTo, false);
         }
         else if (input.args().contains(">>")){
             fileToRedirectTo = getFileToRedirectTo(">>", input);
+            return new Redirect(Redirect.Target.STDOUT, fileToRedirectTo, true);
         }
         else if (input.args().contains("1>>")){
             fileToRedirectTo = getFileToRedirectTo("1>>", input);
+            return new Redirect(Redirect.Target.STDOUT, fileToRedirectTo, true);
         }
         else if (input.args().contains("2>")) {
             fileToRedirectTo = getFileToRedirectTo("2>", input);
+            return new Redirect(Redirect.Target.STDERR, fileToRedirectTo, false);
         }
         else if (input.args().contains("2>>")) {
             fileToRedirectTo = getFileToRedirectTo("2>>", input);
+            return new Redirect(Redirect.Target.STDERR, fileToRedirectTo, true);
         }
-        return fileToRedirectTo;
+        else {
+            return Redirect.NONE;
+        }
     }
 
     private static String getFileToRedirectTo(String operator, Input input) {
