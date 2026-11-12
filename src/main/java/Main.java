@@ -3,9 +3,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
@@ -15,11 +12,16 @@ public class Main {
         Path currentDirectory = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
 
         while (true) {
+            stty("-icanon", "-echo");
             System.out.print("$ ");
-            Scanner scanner = new Scanner(System.in);
-            String line = scanner.nextLine();
-            if (line.isBlank()) {
-                continue;
+            String line = null;
+            try {
+                line = readLine();
+            } finally {
+                stty("icanon", "echo");
+                if (line == null) {
+                    System.exit(0);
+                }
             }
             Input input = Parser.parseInitialInput(line);
 
@@ -39,7 +41,7 @@ public class Main {
             }
             else {
                 if (output.stdErr() != null) {
-                    System.out.println(output.stdErr());
+                System.out.println(output.stdErr());
                 }
                 if (output.stdOut() != null) {
                     System.out.println((output.stdOut()));
@@ -82,6 +84,49 @@ public class Main {
         }
         catch (IOException e) {
             System.out.println("error:" + e.getMessage());
+        }
+    }
+
+    private static void stty(String... args) throws Exception{
+        String[] cmd = new String[args.length + 1];
+        cmd[0] = "stty";
+        System.arraycopy(args, 0, cmd, 1, args.length);
+        new ProcessBuilder(cmd).redirectInput(ProcessBuilder.Redirect.INHERIT).start().waitFor();
+    }
+
+    private static String readLine() throws  IOException {
+        StringBuilder buffer = new StringBuilder();
+        while (true) {
+            int c = System.in.read();
+            if (c == -1) {
+                return null;
+            }
+            if (c == '\n' || c == '\r') {
+                System.out.print("\n");
+                System.out.flush();
+                return buffer.toString();
+            }
+            if (c == '\t') {
+                if (buffer.toString().equals("ech")) {
+                    buffer.append("o ");
+                    System.out.print("o ");
+                }
+                else if (buffer.toString().equals("exi")) {
+                    buffer.append("t ");
+                    System.out.print("t ");
+                }
+            }
+            else if (c == 127 || c == 8) {
+                if (!buffer.isEmpty()) {
+                    buffer.deleteCharAt(buffer.length() - 1);
+                    System.out.print("\b \b");
+                }
+            }
+            else {
+                buffer.append((char) c);
+                System.out.print((char) c);
+            }
+            System.out.flush();
         }
     }
 }
