@@ -50,6 +50,7 @@ public class Main {
         }
     }
 
+
     private static void writeFile(Redirect redirect, Output output) {
         try {
             String text;
