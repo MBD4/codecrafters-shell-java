@@ -115,6 +115,9 @@ public class Main {
                     buffer.append("t ");
                     System.out.print("t ");
                 }
+                else {
+                    System.out.print("\u0007");
+                }
             }
             else if (c == 127 || c == 8) {
                 if (!buffer.isEmpty()) {
