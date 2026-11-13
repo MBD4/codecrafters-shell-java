@@ -108,6 +108,7 @@ public class Main {
                 return buffer.toString();
             }
             if (c == '\t') {
+                String externalExecutable = null;
                 if (buffer.toString().equals("ech")) {
                     buffer.append("o ");
                     System.out.print("o ");
@@ -115,6 +116,10 @@ public class Main {
                 else if (buffer.toString().equals("exi")) {
                     buffer.append("t ");
                     System.out.print("t ");
+                }
+                else if ((externalExecutable = Environment.locateExecutableFileInPATHFromPrefix(buffer.toString())) != null) {
+                    buffer.append(externalExecutable).append(" ");
+                    System.out.print(externalExecutable + " ");
                 }
                 else {
                     System.out.print("\u0007");
