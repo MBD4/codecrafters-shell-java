@@ -2,6 +2,7 @@ import javax.imageio.IIOException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -26,35 +27,40 @@ public class Environment {
         return null;
     }
 
-    public static String locateExecutableFileInPATHFromPrefix(String prefix) {
+    public static List<String> locateExecutableFileInPATHFromPrefix(String prefix) {
         String PATH = System.getenv("PATH");
         if (PATH == null) {
             return null;
         }
         String[] PATHArr = PATH.split(":");
         List<Path> PATHList = Arrays.stream(PATHArr).map(Path::of).toList();
+        List<Path> resultList = new ArrayList<>();
         for (Path p: PATHList) {
-            Optional<Path> resultOptional;
+            List<Path> tempResultList;
             try {
-                resultOptional = Files.list(p)
+                tempResultList = Files.list(p)
                         .map(String::valueOf)
                         .filter(s -> s.startsWith(String.valueOf(p) + "/" + prefix))
                         .map(Path::of)
-                        .findFirst();
+                        .toList();
             } catch (IOException e) {
-                return null;
+                continue;
             }
-            if (resultOptional.isPresent()) {
-                Path result = resultOptional.orElseThrow();
-                if (!Files.isExecutable(result)) {
-                    continue;
-                }
-                String[] resultArr = String.valueOf(result).split("/");
-                if (resultArr.length < 1) {
-                    throw new RuntimeException("This should never happen");
-                }
-                return resultArr[resultArr.length - 1].split(prefix)[1];
+            resultList.addAll(tempResultList);
+        }
+        if (!resultList.isEmpty()) {
+            resultList = resultList.stream().filter(Files::isExecutable).toList();
+            if (resultList.size() == 1) {
+                String[] resultArr = String.valueOf(resultList.getFirst()).split("/");
+                return List.of(resultArr[resultArr.length - 1].split(prefix)[1]);
             }
+            List<String> returnList = new ArrayList<>();
+            for (Path temp: resultList) {
+                String[] tempArr = String.valueOf(temp).split("/");
+                returnList.add(tempArr[tempArr.length - 1]);
+            }
+            returnList = returnList.stream().sorted().toList();
+            return returnList;
         }
 
         return null;

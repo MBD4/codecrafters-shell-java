@@ -1,8 +1,10 @@
 import java.io.IOException;
+import java.io.PushbackInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -98,17 +100,18 @@ public class Main {
     private static String readLine() throws  IOException {
         StringBuilder buffer = new StringBuilder();
         while (true) {
-            int c = System.in.read();
+            PushbackInputStream in = new PushbackInputStream(System.in);
+            int c = in.read();
             if (c == -1) {
                 return null;
             }
-            if (c == '\n' || c == '\r') {
+            else if (c == '\n' || c == '\r') {
                 System.out.print("\n");
                 System.out.flush();
                 return buffer.toString();
             }
-            if (c == '\t') {
-                String externalExecutable = null;
+            else if (c == '\t') {
+                List<String> externalExecutable;
                 if (buffer.toString().equals("ech")) {
                     buffer.append("o ");
                     System.out.print("o ");
@@ -118,8 +121,29 @@ public class Main {
                     System.out.print("t ");
                 }
                 else if ((externalExecutable = Environment.locateExecutableFileInPATHFromPrefix(buffer.toString())) != null) {
-                    buffer.append(externalExecutable).append(" ");
-                    System.out.print(externalExecutable + " ");
+                    if (externalExecutable.size() == 1) {
+                        String singleExternalExecutable = externalExecutable.getFirst();
+                        buffer.append(singleExternalExecutable).append(" ");
+                        System.out.print(singleExternalExecutable + " ");
+                        continue;
+                    }
+                    System.out.print("\u0007");
+                    c = in.read();
+                    if (c == -1) {
+                        return null;
+                    }
+                    if (c == '\t') {
+                        System.out.println();
+                        for (String temp : externalExecutable) {
+                            System.out.print(temp + "  ");
+                        }
+                        System.out.println();
+                        System.out.print("$ " + buffer);
+                    }
+                    else {
+                        in.unread(c);
+                    }
+
                 }
                 else {
                     System.out.print("\u0007");
