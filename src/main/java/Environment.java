@@ -2,10 +2,7 @@ import javax.imageio.IIOException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class Environment {
     /**
@@ -50,9 +47,14 @@ public class Environment {
         }
         if (!resultList.isEmpty()) {
             resultList = resultList.stream().filter(Files::isExecutable).toList();
+            if (resultList.isEmpty()) {
+                return null;
+            }
+            Set<Path> seenNames = new HashSet<>();
+            resultList = resultList.stream().filter(p -> seenNames.add(p.getFileName())).toList();
             if (resultList.size() == 1) {
                 String[] resultArr = String.valueOf(resultList.getFirst()).split("/");
-                return List.of(resultArr[resultArr.length - 1].split(prefix)[1]);
+                return List.of(resultArr[resultArr.length - 1].substring(prefix.length()));
             }
             List<String> returnList = new ArrayList<>();
             for (Path temp: resultList) {
