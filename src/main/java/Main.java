@@ -127,6 +127,28 @@ public class Main {
                         System.out.print(singleExternalExecutable + " ");
                         continue;
                     }
+                    String currentBuffer = buffer.toString();
+                    int longestPrefix = buffer.toString().length();
+                    for (int i = 0; i < externalExecutable.getFirst().length(); i++) {
+                        if (i < currentBuffer.length()) {
+                            continue;
+                        }
+                        int copy = i + 1;
+                        if (externalExecutable.stream().allMatch(s -> s.startsWith(externalExecutable.getFirst().substring(0, copy)))) {
+                            longestPrefix = i + 1;
+                        }
+                        else {
+                            break;
+                        }
+
+                    }
+                    if (longestPrefix > currentBuffer.length()) {
+                        String commonPrefix = externalExecutable.getFirst().substring(0, longestPrefix);
+                        String substring = commonPrefix.substring(buffer.toString().length());
+                        buffer.append(substring);
+                        System.out.print(substring);
+                        continue;
+                    }
                     System.out.print("\u0007");
                     c = in.read();
                     if (c == -1) {
