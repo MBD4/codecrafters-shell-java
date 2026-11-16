@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -111,7 +112,27 @@ public class Main {
                 return buffer.toString();
             }
             else if (c == '\t') {
-                boolean inputStreamClosed = Completer.commandCompleter(buffer, in);
+                if (!buffer.toString().contains(" ")) {
+                    boolean inputStreamClosed = Completer.commandCompleter(buffer, in);
+                    if (inputStreamClosed) {
+                        return null;
+                    }
+                }
+                else {
+                    String[] bufferSplit = buffer.toString().split(" ");
+                    String filePrefix = bufferSplit[bufferSplit.length - 1];
+                    if (filePrefix.isBlank() || bufferSplit.length < 2) {
+                        System.out.print("\u0007");
+                        continue;
+                    }
+                    String fileCompleterResult = Completer.fileCompleter(buffer, filePrefix);
+                    if (fileCompleterResult == null) {
+                        System.out.print("\u0007");
+                        continue;
+                    }
+                    buffer.append(fileCompleterResult);
+                    System.out.print(fileCompleterResult + " ");
+                }
             }
             else if (c == 127 || c == 8) {
                 if (!buffer.isEmpty()) {

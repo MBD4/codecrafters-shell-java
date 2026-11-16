@@ -1,9 +1,13 @@
 import java.io.IOException;
 import java.io.PushbackInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 public class Completer {
 
+    // TODO dont print from this method. the result should be return to main and printed from there
     public static boolean commandCompleter(StringBuilder buffer, PushbackInputStream in) throws IOException {
         List<String> externalExecutable;
         if (buffer.toString().equals("ech")) {
@@ -65,5 +69,23 @@ public class Completer {
             System.out.print("\u0007");
         }
         return false;
+    }
+
+    public static String fileCompleter(StringBuilder buffer, String prefix) {
+        try {
+            List<String> files = Files.list(Path.of("."))
+                    .filter(Files::isRegularFile)
+                    .filter(f -> f.toString().length() > 2)
+                    .map(f -> f.toString().substring(2))
+                    .toList();
+            Optional<String> file = files.stream().filter(f -> f.startsWith(prefix)).findFirst();
+            if (file.isPresent()) {
+                return file.orElseThrow().substring(prefix.length());
+            }
+        }
+        catch (IOException e) {
+            return null;
+        }
+        return null;
     }
 }
