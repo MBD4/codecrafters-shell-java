@@ -71,16 +71,47 @@ public class Completer {
         return false;
     }
 
-    public static String fileCompleter(StringBuilder buffer, String prefix) {
+    public static String fileCompleter(String prefix) {
         try {
-            List<String> files = Files.list(Path.of("."))
-                    .filter(Files::isRegularFile)
-                    .filter(f -> f.toString().length() > 2)
-                    .map(f -> f.toString().substring(2))
-                    .toList();
-            Optional<String> file = files.stream().filter(f -> f.startsWith(prefix)).findFirst();
-            if (file.isPresent()) {
-                return file.orElseThrow().substring(prefix.length());
+            List<String> files;
+            if (!prefix.contains("/")) {
+                //TODO make this try with resource
+                files = Files.list(Path.of("."))
+                        .filter(Files::isRegularFile)
+                        .filter(f -> f.toString().length() > 2)
+                        .map(f -> f.toString().substring(2))
+                        .toList();
+                Optional<String> file = files.stream().filter(f -> f.startsWith(prefix)).findFirst();
+                if (file.isPresent()) {
+                    return file.orElseThrow().substring(prefix.length());
+                }
+            }
+            else {
+                String directoryPath;
+                String filePrefix;
+                if (prefix.endsWith("/")) {
+                    directoryPath = prefix;
+                    filePrefix = "";
+                }
+                else {
+                    List<String> prefixSplit = new java.util.ArrayList<>(List.of(prefix.split("/")));
+                    if (prefixSplit.size() < 2) {
+                        return null;
+                    }
+                    filePrefix = prefixSplit.removeLast();
+                    directoryPath = String.join("/", prefixSplit);
+                }
+                //TODO make this try with resource
+                files = Files.list(Path.of(directoryPath))
+                        .filter(Files::isRegularFile)
+                        .map(Path::getFileName)
+                        .map(Path::toString)
+                        .filter(string -> string.startsWith(filePrefix))
+                        .toList();
+                Optional<String> file = files.stream().findFirst();
+                if (file.isPresent()) {
+                    return file.orElseThrow().substring(filePrefix.length());
+                }
             }
         }
         catch (IOException e) {

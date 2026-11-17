@@ -125,7 +125,7 @@ public class Main {
                         System.out.print("\u0007");
                         continue;
                     }
-                    String fileCompleterResult = Completer.fileCompleter(buffer, filePrefix);
+                    String fileCompleterResult = Completer.fileCompleter(filePrefix);
                     if (fileCompleterResult == null) {
                         System.out.print("\u0007");
                         continue;
