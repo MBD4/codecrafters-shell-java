@@ -122,16 +122,21 @@ public class Main {
                     String[] bufferSplit = buffer.toString().split(" ");
                     String filePrefix = bufferSplit[bufferSplit.length - 1];
                     if (filePrefix.isBlank() || bufferSplit.length < 2) {
-                        System.out.print("\u0007");
-                        continue;
+                        filePrefix = "";
                     }
                     String fileCompleterResult = Completer.fileCompleter(filePrefix);
                     if (fileCompleterResult == null) {
                         System.out.print("\u0007");
                         continue;
                     }
-                    buffer.append(fileCompleterResult);
-                    System.out.print(fileCompleterResult + " ");
+                    else if (fileCompleterResult.endsWith("/")) {
+                        buffer.append(fileCompleterResult);
+                        System.out.print(fileCompleterResult);
+                    }
+                    else {
+                        buffer.append(fileCompleterResult).append(" ");
+                        System.out.print(fileCompleterResult + " ");
+                    }
                 }
             }
             else if (c == 127 || c == 8) {
