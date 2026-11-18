@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class Completer {
 
@@ -92,12 +93,13 @@ public class Completer {
                 directoryPath = "";
                 filePrefix = prefix;
             }
-            //TODO make this try with resource
-            files = Files.list(Path.of(directoryPath))
-                    .map(Path::getFileName)
-                    .map(Path::toString)
-                    .filter(string -> string.startsWith(filePrefix))
-                    .toList();
+            try (Stream<Path> paths = Files.list(Path.of(directoryPath))) {
+                files = paths
+                        .map(Path::getFileName)
+                        .map(Path::toString)
+                        .filter(string -> string.startsWith(filePrefix))
+                        .toList();
+            }
             Optional<String> file = files.stream().findFirst();
             if (file.isPresent()) {
                 if (Files.isDirectory(Path.of(directoryPath + file.orElseThrow()))) {

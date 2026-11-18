@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class Environment {
     /**
@@ -34,8 +35,8 @@ public class Environment {
         List<Path> resultList = new ArrayList<>();
         for (Path p: PATHList) {
             List<Path> tempResultList;
-            try {
-                tempResultList = Files.list(p)
+            try (Stream<Path> paths = Files.list(p)){
+                tempResultList = paths
                         .map(String::valueOf)
                         .filter(s -> s.startsWith(String.valueOf(p) + "/" + prefix))
                         .map(Path::of)
