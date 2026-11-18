@@ -124,7 +124,7 @@ public class Main {
                     if (filePrefix.isBlank() || bufferSplit.length < 2) {
                         filePrefix = "";
                     }
-                    String fileCompleterResult = Completer.fileCompleter(filePrefix);
+                    String fileCompleterResult = Completer.fileCompleter(filePrefix, in, buffer);
                     if (fileCompleterResult == null) {
                         System.out.print("\u0007");
                         continue;

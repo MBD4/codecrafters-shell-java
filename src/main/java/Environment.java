@@ -25,6 +25,18 @@ public class Environment {
         return null;
     }
 
+    /**
+     * Searches the directories listed in the PATH environment variable for executable files whose
+     * file names begin with the specified prefix.
+     *
+     * Directories that cannot be listed are ignored. Duplicate executable file names found in
+     * multiple PATH directories are reported only once.
+     *
+     * @param prefix the file name prefix to search for
+     * @return a list of matching executable names, null if PATH is not set or no executable match is found.
+     *         If exactly one match is found, the list contains only the portion of the file name after
+     *         the specified prefix; otherwise, the list contains the matching file names sorted alphabetically
+     */
     public static List<String> locateExecutableFileInPATHFromPrefix(String prefix) {
         String PATH = System.getenv("PATH");
         if (PATH == null) {

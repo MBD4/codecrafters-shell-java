@@ -72,7 +72,7 @@ public class Completer {
         return false;
     }
 
-    public static String fileCompleter(String prefix) {
+    public static String fileCompleter(String prefix, PushbackInputStream in, StringBuilder buffer) {
         try {
             List<String> files;
             String directoryPath;
@@ -95,17 +95,42 @@ public class Completer {
             }
             try (Stream<Path> paths = Files.list(Path.of(directoryPath))) {
                 files = paths
-                        .map(Path::getFileName)
-                        .map(Path::toString)
+                        .map(p -> {
+                            if (Files.isDirectory(p)) {
+                                return p.getFileName().toString() + "/";
+                            }
+                            return p.getFileName().toString();
+                        })
                         .filter(string -> string.startsWith(filePrefix))
+                        .sorted()
                         .toList();
             }
-            Optional<String> file = files.stream().findFirst();
-            if (file.isPresent()) {
-                if (Files.isDirectory(Path.of(directoryPath + file.orElseThrow()))) {
-                    return file.orElseThrow().substring(filePrefix.length()) + "/";
+            if (files.size() < 2) {
+                Optional<String> file = files.stream().findFirst();
+                if (file.isPresent()) {
+                    if (Files.isDirectory(Path.of(directoryPath + file.orElseThrow()))) {
+                        return file.orElseThrow().substring(filePrefix.length());
+                    }
+                    return file.orElseThrow().substring(filePrefix.length());
                 }
-                return file.orElseThrow().substring(filePrefix.length());
+            }
+            else {
+                System.out.print("\u0007");
+                int c = in.read();
+                if (c == -1) {
+                    return "";
+                }
+                if (c == '\t') {
+                    System.out.println();
+                    for (String temp : files) {
+                        System.out.print(temp + "  ");
+                    }
+                    System.out.println();
+                    System.out.print("$ " + buffer);
+                }
+                else {
+                    in.unread(c);
+                }
             }
         }
 
