@@ -134,8 +134,8 @@ public class Main {
                         System.out.print(fileCompleterResult);
                     }
                     else {
-                        buffer.append(fileCompleterResult).append(" ");
-                        System.out.print(fileCompleterResult + " ");
+                        buffer.append(fileCompleterResult);
+                        System.out.print(fileCompleterResult);
                     }
                 }
             }

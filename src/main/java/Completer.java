@@ -111,10 +111,29 @@ public class Completer {
                     if (Files.isDirectory(Path.of(directoryPath + file.orElseThrow()))) {
                         return file.orElseThrow().substring(filePrefix.length());
                     }
-                    return file.orElseThrow().substring(filePrefix.length());
+                    return file.orElseThrow().substring(filePrefix.length()) + " ";
                 }
             }
             else {
+                String firstItem = files.getFirst();
+                int longestPrefix = filePrefix.length();
+                for (int i = 0; i < firstItem.length(); i++) {
+                    if (i < filePrefix.length()) {
+                        continue;
+                    }
+                    int copy = i + 1;
+                    if (files.stream().allMatch(s -> s.startsWith(firstItem.substring(0, copy)))) {
+                        longestPrefix = i + 1;
+                    }
+                    else {
+                        break;
+                    }
+
+                }
+                if (longestPrefix > filePrefix.length()) {
+                    String commonPrefix = firstItem.substring(0, longestPrefix);
+                    return commonPrefix.substring(filePrefix.length());
+                }
                 System.out.print("\u0007");
                 int c = in.read();
                 if (c == -1) {
