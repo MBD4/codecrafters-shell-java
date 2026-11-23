@@ -41,12 +41,7 @@ public class Builtin {
     }
 
     private static Output executeEcho(Input input, Path currentDirectory) {
-        List<String> stringsToEcho = input.args();
-        StringBuilder sb = new StringBuilder();
-        for (String s: stringsToEcho) {
-            sb.append(s).append(" ");
-        }
-        return new Output(currentDirectory, sb.toString(), null);
+        return new Output(currentDirectory, String.join(" ", input.args()), null);
     }
 
     private static Output executeType(Input input, Path currentDirectory) {

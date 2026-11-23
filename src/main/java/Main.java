@@ -40,7 +40,7 @@ public class Main {
                 continue;
             }
             if (redirect != Redirect.NONE) {
-                writeFile(redirect, output);
+                writeFile(redirect, output, currentDirectory);
             }
             else {
                 if (output.stdErr() != null) {
@@ -54,7 +54,7 @@ public class Main {
     }
 
 
-    private static void writeFile(Redirect redirect, Output output) {
+    private static void writeFile(Redirect redirect, Output output, Path currentDirectory) {
         try {
             String text;
             if (redirect.target() == Redirect.Target.STDERR) {
@@ -70,10 +70,10 @@ public class Main {
                 text += System.lineSeparator();
             }
             if (redirect.append()) {
-                Files.writeString(Path.of(redirect.file()), text, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                Files.writeString(currentDirectory.resolve(redirect.file()), text, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             }
             else {
-                Files.writeString(Path.of(redirect.file()), text);
+                Files.writeString(currentDirectory.resolve(redirect.file()), text);
             }
             if (redirect.target() == Redirect.Target.STDERR) {
                 if (output.stdOut() != null) {
