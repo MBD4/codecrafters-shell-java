@@ -72,7 +72,8 @@ public class Completer {
         return false;
     }
 
-    public static String fileCompleter(String prefix, PushbackInputStream in, StringBuilder buffer) {
+    // TODO dont print from this method. the result should be return to main and printed from there
+    public static String fileCompleter(String prefix, PushbackInputStream in, StringBuilder buffer, Path currentDirectory) {
         try {
             List<String> files;
             String directoryPath;
@@ -93,7 +94,7 @@ public class Completer {
                 directoryPath = "";
                 filePrefix = prefix;
             }
-            try (Stream<Path> paths = Files.list(Path.of(directoryPath))) {
+            try (Stream<Path> paths = Files.list(currentDirectory.resolve(directoryPath))) {
                 files = paths
                         .map(p -> {
                             if (Files.isDirectory(p)) {
@@ -108,7 +109,7 @@ public class Completer {
             if (files.size() < 2) {
                 Optional<String> file = files.stream().findFirst();
                 if (file.isPresent()) {
-                    if (Files.isDirectory(Path.of(directoryPath + file.orElseThrow()))) {
+                    if (file.orElseThrow().endsWith("/")) {
                         return file.orElseThrow().substring(filePrefix.length());
                     }
                     return file.orElseThrow().substring(filePrefix.length()) + " ";

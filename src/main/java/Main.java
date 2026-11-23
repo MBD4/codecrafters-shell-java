@@ -19,7 +19,7 @@ public class Main {
             System.out.print("$ ");
             String line = null;
             try {
-                line = readLine();
+                line = readLine(currentDirectory);
             } finally {
                 stty("icanon", "echo");
                 if (line == null) {
@@ -98,10 +98,10 @@ public class Main {
         new ProcessBuilder(cmd).redirectInput(ProcessBuilder.Redirect.INHERIT).start().waitFor();
     }
 
-    private static String readLine() throws  IOException {
+    private static String readLine(Path currentDirectory) throws  IOException {
         StringBuilder buffer = new StringBuilder();
+        PushbackInputStream in = new PushbackInputStream(System.in);
         while (true) {
-            PushbackInputStream in = new PushbackInputStream(System.in);
             int c = in.read();
             if (c == -1) {
                 return null;
@@ -124,7 +124,7 @@ public class Main {
                     if (filePrefix.isBlank() || bufferSplit.length < 2) {
                         filePrefix = "";
                     }
-                    String fileCompleterResult = Completer.fileCompleter(filePrefix, in, buffer);
+                    String fileCompleterResult = Completer.fileCompleter(filePrefix, in, buffer, currentDirectory);
                     if (fileCompleterResult == null) {
                         System.out.print("\u0007");
                         continue;

@@ -51,7 +51,7 @@ public class Builtin {
 
     private static Output executeType(Input input, Path currentDirectory) {
         if (input.args().isEmpty()) {
-            return null;
+            return new Output(currentDirectory, null, null);
         }
         String fileToCheck = input.args().getFirst();
         String executableFile = Environment.locateExecutableFileInPATH(fileToCheck);
