@@ -44,7 +44,7 @@ public class Main {
             }
             else {
                 if (output.stdErr() != null) {
-                System.out.println(output.stdErr());
+                    System.out.println(output.stdErr());
                 }
                 if (output.stdOut() != null) {
                     System.out.println((output.stdOut()));

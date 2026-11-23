@@ -8,7 +8,6 @@ public class Builtin {
 
     public static Output executeInput(Input input, Path currentDirectory, Redirect redirect) {
         String command = input.command();
-        String outputString = "";
         new Output(currentDirectory, null, null);
         switch (command) {
             case "exit" -> executeExit();
@@ -23,6 +22,9 @@ public class Builtin {
             }
             case "cd" -> {
                 return executeCd(input, currentDirectory);
+            }
+            case "complete" -> {
+                return executeComplete(input, currentDirectory);
             }
             default -> {
                 if (Environment.locateExecutableFileInPATH(command) != null) {
@@ -79,6 +81,16 @@ public class Builtin {
         } else {
             return new Output(currentDirectory, null, "cd: " + newDirectory + ": No such file or directory");
         }
+    }
+
+    private static Output executeComplete(Input input, Path currentDirectory) {
+        if (input.args().getFirst().equals("-p")) {
+            if (input.args().size() < 2) {
+                return new Output(currentDirectory, null, "-p flag should have more args");
+            }
+            return new Output(currentDirectory, "complete: " + input.args().get(1) + ": no completion specification", null);
+        }
+        return new Output(currentDirectory, null, "unfinished Complete builtin feature");
     }
 
     private static Output executeExecutableFile(Input input, Path currentDirectory, Redirect redirect) {
