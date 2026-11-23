@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Builtin {
-    private final static List<String> builtins = List.of("exit", "echo", "type", "pwd", "cd");
+    private final static List<String> builtins = List.of("exit", "echo", "type", "pwd", "cd", "complete");
 
     public static Output executeInput(Input input, Path currentDirectory, Redirect redirect) {
         String command = input.command();
