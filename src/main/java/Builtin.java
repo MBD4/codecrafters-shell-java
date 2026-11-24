@@ -1,10 +1,13 @@
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Builtin {
     private final static List<String> builtins = List.of("exit", "echo", "type", "pwd", "cd", "complete");
+    private static Map<String, String> completions = new HashMap<>();
 
     public static Output executeInput(Input input, Path currentDirectory, Redirect redirect) {
         String command = input.command();
@@ -84,13 +87,28 @@ public class Builtin {
     }
 
     private static Output executeComplete(Input input, Path currentDirectory) {
-        if (input.args().getFirst().equals("-p")) {
+        String flag = input.args().getFirst();
+        if (flag.equals("-p")) {
             if (input.args().size() < 2) {
                 return new Output(currentDirectory, null, "-p flag should have more args");
             }
-            return new Output(currentDirectory, "complete: " + input.args().get(1) + ": no completion specification", null);
+            else if(!completions.containsKey(input.args().get(1))) {
+                return new Output(currentDirectory, "complete: " + input.args().get(1) + ": no completion specification", null);
+            }
+            else {
+                return new Output(currentDirectory, "complete -C '" + completions.get(input.args().get(1)) + "' " + input.args().get(1), null);
+            }
         }
-        return new Output(currentDirectory, null, "unfinished Complete builtin feature");
+        else if (flag.equals("-C")) {
+            if (input.args().size() < 3) {
+                return new Output(currentDirectory, null, "-C flag should have more args");
+            }
+            else {
+                completions.put(input.args().get(2), input.args().get(1));
+                return new Output(currentDirectory, null, null);
+            }
+        }
+        return new Output(currentDirectory, null, "Error: this line should never be reached");
     }
 
     private static Output executeExecutableFile(Input input, Path currentDirectory, Redirect redirect) {
