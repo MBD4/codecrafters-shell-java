@@ -118,4 +118,8 @@ public class Builtin {
     public static List<String> getBuiltins() {
         return builtins;
     }
+
+    public static Map<String, String> getCompletions() {
+        return completions;
+    }
 }

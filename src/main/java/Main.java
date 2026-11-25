@@ -1,4 +1,6 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PushbackInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -116,6 +118,21 @@ public class Main {
                     boolean inputStreamClosed = Completer.commandCompleter(buffer, in);
                     if (inputStreamClosed) {
                         return null;
+                    }
+                }
+                else if (buffer.toString().endsWith(" ") && Builtin.getCompletions().containsKey(buffer.toString().trim())) {
+                    String executablePath = Builtin.getCompletions().get(buffer.toString().trim());
+                    ProcessBuilder pb = new ProcessBuilder(executablePath);
+                    try (Process process = pb.start()) {
+                        BufferedReader readerStd = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                        String line = readerStd.readLine();
+                        buffer.append(line);
+                        buffer.append(" ");
+                        System.out.print(line);
+                        System.out.print(" ");
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
                 else {
