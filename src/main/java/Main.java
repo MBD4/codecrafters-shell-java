@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Main {
@@ -123,22 +124,19 @@ public class Main {
                 String[] args = buffer.toString().strip().replaceAll("\\s+", " ").split(" ");
                 if (args.length > 0 && Builtin.getCompletions().containsKey(args[0])) {
                     String executablePath = Builtin.getCompletions().get(args[0]);
-                    boolean runProcess = false;
-                    ProcessBuilder pb;
+                    ProcessBuilder pb = new ProcessBuilder();
+                    Map<String, String> env = pb.environment();
+                    env.put("COMP_LINE", buffer.toString());
+                    env.put("COMP_POINT", String.valueOf(buffer.toString().getBytes().length));
                     if (args.length == 1 ) {
-                        pb = new ProcessBuilder(executablePath);
-                        runProcess = true;
+                        pb.command().add(executablePath);
                     }
                     else {
-                        List<String> argsForPb = new java.util.ArrayList<>();
-                        argsForPb.add(executablePath);
+                        pb.command().add(executablePath);
 
-                        argsForPb.add(args[0]);
-                        argsForPb.add(args[args.length - 1]);
-                        argsForPb.add(args[args.length - 2]);
-
-                        pb = new ProcessBuilder(argsForPb);
-                        runProcess = true;
+                        pb.command().add(args[0]);
+                        pb.command().add(args[args.length - 1]);
+                        pb.command().add(args[args.length - 2]);
                     }
                     try (Process process = pb.start()) {
                         BufferedReader readerStd = new BufferedReader(new InputStreamReader(process.getInputStream()));
