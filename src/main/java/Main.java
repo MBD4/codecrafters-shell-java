@@ -120,18 +120,45 @@ public class Main {
                         return null;
                     }
                 }
-                else if (buffer.toString().endsWith(" ") && Builtin.getCompletions().containsKey(buffer.toString().trim())) {
-                    String executablePath = Builtin.getCompletions().get(buffer.toString().trim());
-                    ProcessBuilder pb = new ProcessBuilder(executablePath);
+                String[] args = buffer.toString().strip().replaceAll("\\s+", " ").split(" ");
+                if (args.length > 0 && Builtin.getCompletions().containsKey(args[0])) {
+                    String executablePath = Builtin.getCompletions().get(args[0]);
+                    boolean runProcess = false;
+                    ProcessBuilder pb;
+                    if (args.length == 1 ) {
+                        pb = new ProcessBuilder(executablePath);
+                        runProcess = true;
+                    }
+                    else {
+                        List<String> argsForPb = new java.util.ArrayList<>();
+                        argsForPb.add(executablePath);
+
+                        argsForPb.add(args[0]);
+                        argsForPb.add(args[args.length - 1]);
+                        argsForPb.add(args[args.length - 2]);
+
+                        pb = new ProcessBuilder(argsForPb);
+                        runProcess = true;
+                    }
                     try (Process process = pb.start()) {
                         BufferedReader readerStd = new BufferedReader(new InputStreamReader(process.getInputStream()));
                         String line = readerStd.readLine();
-                        buffer.append(line);
-                        buffer.append(" ");
-                        System.out.print(line);
-                        System.out.print(" ");
-                    }
-                    catch (Exception e) {
+                        if (!(line == null) && !line.isEmpty() && !line.equals("0")) {
+                            String lineToAdd;
+                            if (args.length == 1) {
+                                lineToAdd = line;
+                            }
+                            else {
+                                lineToAdd = line.substring(args[args.length - 1].length());
+                            }
+                            buffer.append(lineToAdd);
+                            buffer.append(" ");
+                            System.out.print(lineToAdd);
+                            System.out.print(" ");
+                        } else {
+                            System.out.print("\u0007");
+                        }
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
