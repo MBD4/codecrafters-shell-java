@@ -120,6 +120,7 @@ public class Main {
                     if (inputStreamClosed) {
                         return null;
                     }
+                    continue;
                 }
                 String[] args = buffer.toString().strip().replaceAll("\\s+", " ").split(" ");
                 if (args.length > 0 && Builtin.getCompletions().containsKey(args[0])) {
