@@ -6,10 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -141,20 +138,43 @@ public class Main {
                     }
                     try (Process process = pb.start()) {
                         BufferedReader readerStd = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                        String line = readerStd.readLine();
-                        if (!(line == null) && !line.isEmpty() && !line.equals("0")) {
+                        List<String> completerResults = new ArrayList<>();
+                        String line;
+                        while ((line = readerStd.readLine()) != null) {
+                            completerResults.add(line);
+                        }
+                        if (!completerResults.isEmpty() && !completerResults.getFirst().equals("0") && completerResults.size() == 1) {
                             String lineToAdd;
                             if (args.length == 1) {
-                                lineToAdd = line;
+                                lineToAdd = completerResults.getFirst();
                             }
                             else {
-                                lineToAdd = line.substring(args[args.length - 1].length());
+                                lineToAdd = completerResults.getFirst().substring(args[args.length - 1].length());
                             }
                             buffer.append(lineToAdd);
                             buffer.append(" ");
                             System.out.print(lineToAdd);
                             System.out.print(" ");
-                        } else {
+                        }
+                        else if (!completerResults.isEmpty() && !completerResults.getFirst().equals("0") && completerResults.size() > 1) {
+                            System.out.print("\u0007");
+                            int cc = in.read();
+                            if (cc == -1) {
+                                return null;
+                            }
+                            if (cc == '\t') {
+                                System.out.println();
+                                for (String temp : completerResults) {
+                                    System.out.print(temp + "  ");
+                                }
+                                System.out.println();
+                                System.out.print("$ " + buffer);
+                            }
+                            else {
+                                in.unread(c);
+                            }
+                        }
+                        else {
                             System.out.print("\u0007");
                         }
                     } catch (Exception e) {
